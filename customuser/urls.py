@@ -32,6 +32,7 @@ urlpatterns = [
     re_path(r'user_delete/(?P<id>[0-9]+)$', ManagerViews.user_delete, name='user_delete'),
     # re_path(r'employee_delete/(?P<id>[0-9]+)$', ManagerViews.employee_delete, name='employee_delete'),
     re_path(r'user_update/(?P<id>[0-9]+)$', ManagerViews.user_update, name='user_update'),
+    path('employee_update/<user>', ManagerViews.employee_update, name='employee_update'),
     # path('user_update', ManagerViews.user_update, name='user_update'),
     path('hr_home/<str:user>', ManagerViews.hr_home),
     path('employee_home/<str:user>', ManagerViews.employee_home),
@@ -40,6 +41,7 @@ urlpatterns = [
     path('add_staff_save', ManagerViews.add_staff_save),
     path('add_employee_save/<str:user>', ManagerViews.add_employee_save),
     path('update_staff_save/<id>', ManagerViews.update_staff_save, name='update_staff_save'),
+    path('update_employee_save/<user>', ManagerViews.update_employee_save, name='update_employee_save'),
     # re_path(r'update_staff_save/(?P<id>[0-9]+)$', ManagerViews.update_staff_save, name='update_staff_save'),
     path('get_user_details/', views.GetUserDetails),
     path('logout_user', views.logout_user)

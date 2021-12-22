@@ -12,35 +12,33 @@ from userapp.decorator import user_type_hr, user_type_employee
 
 @staff_member_required(login_url='/')
 def admin_home(request):
-    return render(request,'manager_template/home_content.html')
+    name = request.user.username
+    return render(request,'manager_template/home_content.html',{'name':name})
 
 @login_required
 @user_type_hr
 def hr_home(request,user):
     print('hkjb====================================hvkgeszrtg')
-    print(user)
-    return render(request,'manager_template/hr_content.html',{'user':user})
+    name = request.user.username
+    # id = request.user.id
+    return render(request,'manager_template/hr_content.html',{'user':user,'name':name})
 
 @login_required
 @user_type_employee
 def employee_home(request,user):
     print('emnfkvblir===============')
-    return render(request,'manager_template/employee_content.html',{'user':user})
+    name = request.user.username
+    return render(request,'manager_template/employee_content.html',{'user':user,'name':name})
 
 @staff_member_required(login_url='/')
 def add_staff(request):
-    return render(request,'manager_template/add_staff_template.html')
+    name = request.user.username
+    return render(request,'manager_template/add_staff_template.html',{'name':name})
 
 @staff_member_required(login_url='/')
 def manage_staff(request):
-    # response = User.objects.values('id','username','first_name','last_name','user_type','email').order_by('id')
-    # response = User.objects.order_by('-user_type')
+    name = request.user.username
     response = User.objects.exclude(user_type='Manager').order_by('-user_type')
-    name = User.objects.filter(user_type='Manager')
-    name = str(name)
-    name = name[17:-3]
-    name = name.rsplit('@')
-    name = name[0]
     col = ['id','username','first_name','last_name','email','user_type']
     return render(request,'manager_template/manage_staff_template.html', {'response':response,'name':name, 'col':col})
 
@@ -48,8 +46,8 @@ def manage_staff(request):
 @user_type_hr
 def add_employee(request,user):
     print(user)
-    # user = request.user.user_type
-    return render(request,'manager_template/add_employee_template.html',{'user':user})
+    name = request.user.username
+    return render(request,'manager_template/add_employee_template.html',{'user':user,'name':name})
 
 @login_required
 @user_type_hr
@@ -58,7 +56,8 @@ def manage_employee(request,user):
     response = User.objects.filter(user_type='Employee')
     # name = User.objects.get(username='username')
     name = User.objects.filter(user_type='HR')
-    name = str(name)
+    # print(request.user.username)
+    name = request.user.username
     # name = name[17:-3]
     col = ['id','username','first_name','last_name','email']
     return render(request,'manager_template/manage_employee_template.html', {'response':response,'name':name, 'col':col, 'user':user})
@@ -71,13 +70,46 @@ def user_delete(request, id):
         messages.success(request, "Staff deleted Successfully!")
     except:
         messages.error(request, "Staff Not found")    
-    return render(request, 'manager_template/manage_staff_template.html')
+    return HttpResponseRedirect('/manage_staff')
 
 @staff_member_required(login_url='/')
 def user_update(request,id):
+    name = request.user.username
     user = User.objects.get(id=id)
     print(user)
-    return render(request, 'manager_template/update_staff_template.html',{'user':user})
+    return render(request, 'manager_template/update_staff_template.html',{'user':user,'name':name})
+
+@login_required
+@user_type_employee
+def employee_update(request,user):
+    name = request.user.username
+    # print(id)
+    return render(request, 'manager_template/update_employee_template.html',{'user':user,'name':name})
+
+@login_required
+@user_type_employee
+def update_employee_save(request,user):
+    print("=============== calling update_employee_save ===============",user)
+    id = request.user.id
+    user = User.objects.get(id=id)
+    if request.method == 'POST':
+        print(request)
+        user_type = request.user.user_type
+        print("=============== Employee calling else ===============")
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        try:
+            print("=============== Employee calling try ===============")
+            print(request.POST['username'])
+            User.objects.filter(id=id).update(first_name=first_name, last_name=last_name,username=username, email=email, is_staff=False)
+            print("=============== Hr calling try2 ===============")
+            messages.success(request,'User Updated Successfully')
+            return HttpResponseRedirect('/employee_update/%s'%user_type)   
+        except:
+            messages.error(request,'Failed to Update User!')
+            return HttpResponseRedirect('/employee_update/%s'%user_type)
 
 @staff_member_required(login_url='/')
 def update_staff_save(request,id):
@@ -101,15 +133,15 @@ def update_staff_save(request,id):
             messages.error(request,'Failed to Update User!')
             return HttpResponseRedirect('/manage_staff')
 
-# @staff_member_required(login_url='/')
-# def employee_delete(request, id):
-#     try:
-#         user = User.objects.get(id=id)
-#         user.delete()
-#         messages.success(request, "Employee deleted Successfully!")
-#     except:
-#         messages.error(request, "Employee Not found")    
-#     return render(request, 'manager_template/manage_employee_template.html')
+@staff_member_required(login_url='/')
+def employee_delete(request, id):
+    try:
+        user = User.objects.get(id=id)
+        user.delete()
+        messages.success(request, "Employee deleted Successfully!")
+    except:
+        messages.error(request, "Employee Not found")    
+    return render(request, 'manager_template/manage_employee_template.html')
 
 
 
